@@ -5,6 +5,8 @@ import Foundation
 public struct TextStyle: OptionSet {
   public let rawValue : UInt16
 
+  /// Creates a style backed by the supplied raw bitset.  Callers should prefer
+  /// the static factory properties unless interoperating with serialized data.
   public init ( rawValue: UInt16 ) {
     self.rawValue = rawValue
   }
@@ -57,6 +59,7 @@ public struct TextStyle: OptionSet {
 public struct Color {
   public let index : UInt8
 
+  /// Wraps the 0-255 palette index used by 256-colour aware terminals.
   public init ( index: UInt8 ) {
     self.index = index
   }

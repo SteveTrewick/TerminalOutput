@@ -1,7 +1,10 @@
 import XCTest
 @testable import TerminalOutput
 
+/// Integration-style tests covering the primary package entry points.
 final class TerminalOutputTests: XCTestCase {
+  /// Ensures a ``StyledGlyph`` emits style open/reset sequences around the
+  /// character.
   func testStyledGlyphRendersBoldA () throws {
     guard let scalar = "A".unicodeScalars.first else {
       XCTFail("Missing scalar")
@@ -16,6 +19,8 @@ final class TerminalOutputTests: XCTestCase {
     XCTAssertEqual(builder.asString(), "\u{001B}[1mA\u{001B}[0m")
   }
 
+  /// Validates that ``FlowControlStrategy`` respects the configured chunk size
+  /// and flush behaviour.
   func testFlowControlStrategyChunksData () throws {
     let strategy = FlowControlStrategy(chunkSize: 4, microPause: 0, flushEachChunk: true)
     var chunks   = [String]()
@@ -37,6 +42,8 @@ final class TerminalOutputTests: XCTestCase {
     XCTAssertEqual(flushes, 2)
   }
 
+  /// Confirms that ``Terminal`` renders a ``Renderable`` into the underlying
+  /// connection as UTF-8 data.
   func testTerminalSendsRenderablePayload () throws {
     let connection = MockConnection()
     let terminal   = Terminal(connection: connection)
@@ -49,14 +56,17 @@ final class TerminalOutputTests: XCTestCase {
   }
 }
 
+/// Minimal ``TerminalConnection`` test double that records writes and flushes.
 private final class MockConnection: TerminalConnection {
   var payloads  : [Data] = []
   var flushes  : Int    = 0
 
+  /// Records the ``data`` payload.
   func write ( data: Data ) throws {
     payloads.append(data)
   }
 
+  /// Tracks flush invocations.
   func flush () throws {
     flushes += 1
   }

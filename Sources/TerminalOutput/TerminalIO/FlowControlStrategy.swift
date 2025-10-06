@@ -44,6 +44,9 @@ public struct FlowControlStrategy {
   /// Convenience strategy that attempts to write the payload in a single pass
   /// while still honouring explicit flush requests.  Useful when the caller has
   /// pre-sized data known to be safe for immediate emission.
+  ///
+  /// The large chunk size effectively disables chunking while keeping the other
+  /// behaviours configurable via the initializer.
   public static let immediate : FlowControlStrategy = FlowControlStrategy(chunkSize: Int.max, microPause: 0, flushEachChunk: true)
 
   /// Factory for chunked pacing.  The defaults favour safety by flushing after
