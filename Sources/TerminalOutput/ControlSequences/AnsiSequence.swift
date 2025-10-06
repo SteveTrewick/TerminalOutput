@@ -1,19 +1,14 @@
-import Foundation
+public struct AnsiSequence : RawRepresentable, ExpressibleByStringLiteral, Equatable {
+  public typealias StringLiteralType = String
 
-public struct AnsiSequence : Equatable, Hashable, ExpressibleByStringLiteral, ExpressibleByArrayLiteral {
-  public typealias ArrayLiteralElement = UInt8
+  public let rawValue : String
+  public var content  : String { rawValue }
 
-  public let bytes : [UInt8]
-
-  public init ( bytes: [UInt8] ) {
-    self.bytes = bytes
+  public init ( rawValue: String ) {
+    self.rawValue = rawValue
   }
 
-  public init ( arrayLiteral elements: UInt8... ) {
-    self.bytes = elements
-  }
-
-  public init ( stringLiteral value: String ) {
-    self.bytes = Array(value.utf8)
+  public init ( stringLiteral value: StringLiteralType ) {
+    self.rawValue = value
   }
 }
