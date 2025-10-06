@@ -11,4 +11,9 @@ public struct AnsiSequence : RawRepresentable, ExpressibleByStringLiteral, Equat
   public init ( stringLiteral value: StringLiteralType ) {
     self.rawValue = value
   }
+
+  public static func from ( _ commands: [TerminalCommand] ) -> AnsiSequence {
+    let combined = commands.map { $0.sequence.rawValue }.joined()
+    return AnsiSequence(rawValue: combined)
+  }
 }

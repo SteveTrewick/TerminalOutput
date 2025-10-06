@@ -83,11 +83,11 @@ private func normalized ( _ amount: Int ) -> String {
 
 private func csi ( parameters: [String], terminator: Character ) -> AnsiSequence {
   let parameterString = parameters.isEmpty ? "" : parameters.joined(separator: ";")
-  return AnsiSequence(controlSequenceIntroducer + parameterString + String(terminator))
+  return AnsiSequence(rawValue: controlSequenceIntroducer + parameterString + String(terminator))
 }
 
 private func osc ( payload: String ) -> AnsiSequence {
-  return AnsiSequence(operatingSystemCommand + payload + bellTermination)
+  return AnsiSequence(rawValue: operatingSystemCommand + payload + bellTermination)
 }
 
 private func bufferSequence ( _ buffer: TerminalCommand.ScreenBuffer ) -> AnsiSequence {
