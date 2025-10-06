@@ -1,3 +1,101 @@
 # TerminalOutput
 
-A description of this package.
+TerminalOutput is a Swift package for composing and streaming ANSI control sequences to an interactive terminal. It provides a high-level facade for rendering UI components, direct control of the cursor and buffers, and utilities for styling text output. The package is designed for macOS 11 and newer but stays portable enough to compile on Linux for testing.
+
+## Installation
+
+Add **TerminalOutput** to your `Package.swift` manifest using Swift Package Manager:
+
+```swift
+.package(url: "https://github.com/your-org/TerminalOutput.git", from: "1.0.0")
+```
+
+Then add the dependency to your target:
+
+```swift
+.target(
+  name: "YourApp",
+  dependencies: [
+    .product(name: "TerminalOutput", package: "TerminalOutput")
+  ]
+)
+```
+
+Import the library where you plan to emit terminal output:
+
+```swift
+import TerminalOutput
+```
+
+## Quick Start
+
+Create a `Terminal` with a connection, emit content, and flush when required:
+
+```swift
+let connection = FileHandleTerminalConnection()
+let terminal    = Terminal(connection: connection)
+
+try terminal.send("Hello, world!\n")
+try terminal.send([TerminalCommands.clearScreen()])
+try terminal.flush()
+```
+
+## Architecture Overview
+
+TerminalOutput separates responsibilities into a few core layers:
+
+| Layer | Responsibilities |
+| ----- | ---------------- |
+| `Terminal` facade | Batches renderables or text and writes UTF-8 data through a `TerminalConnection`. |
+| Rendering | Anything that conforms to `Renderable` can stream its ANSI representation into an `AnsiStringBuilder`. |
+| Attributes | `StyledGlyph`, `TextStyle`, and `Color` types describe richly formatted text. |
+| Control Sequences | Convenience factories (`CSI`, `OSC`, `TerminalCommands`) build raw escape sequences. |
+| IO & Flow Control | `TerminalConnection` abstractions manage pacing and buffer flushes. |
+
+The following sections explain each layer’s public API.
+
+## Terminal Facade
+
+`Terminal` is the main entry point. It wraps a `TerminalConnection` and exposes helpers for different forms of content:
+
+- `send(_ renderable: Renderable)` renders a single value and writes the resulting bytes.
+- `send(_ renderables: [Renderable])` batches multiple renderables with a shared builder before emitting them.
+- `send(_ text: String)` appends plain text directly to the builder for quick output.
+- `perform(_ sequences: [AnsiSequence])` emits a set of precomputed control sequences without building custom renderables.
+- `flush()` delegates to the underlying connection to push any buffered bytes to the terminal.
+
+These operations throw if the connection fails to write or flush.
+
+## Connections and Flow Control
+
+A `TerminalConnection` defines how bytes reach the terminal. The package ships with `FileHandleTerminalConnection`, which targets `stdout` by default and can be configured with a `FlowControlStrategy` to avoid overwhelming the terminal buffer. Strategies describe chunk sizes, optional pauses, and whether to flush per chunk. Provide a custom connection to integrate with other transports or to substitute test doubles.
+
+## Renderables and Builders
+
+Anything that can render itself into ANSI sequences conforms to `Renderable`. Renderables receive an `inout AnsiStringBuilder`, allowing them to append control sequences or text. For example, `RenderedSequence` wraps a single `AnsiSequence` to satisfy the protocol. The `AnsiStringBuilder` collects sequences into a UTF-8 buffer and can expose either `Data` or `String` views when needed.
+
+## Styling Text Output
+
+Use `StyledGlyph` to emit a single `UnicodeScalar` with optional `TextStyle`, foreground `Color`, and background `Color`. Collections of styled glyphs can render themselves, making it straightforward to build attributed text runs. The `TextStyle` option set includes bold, dim, italic, underline, blink, inverse, hidden, and strikethrough flags. Colors map to the standard 8-color palette but can be instantiated with any 0–255 index for extended color support.
+
+## Control Sequences
+
+The control-sequence helpers simplify cursor movement, buffer switching, and other terminal commands:
+
+- `CSI` provides functions for cursor positioning and erase operations, along with helpers for hiding/showing the cursor and switching between alternate and primary screen buffers.
+- `OSC` implements Operating System Command sequences like setting the window title.
+- `TerminalCommands` exposes high-level helpers built on top of `TerminalCommand` enums when you want type-safe composition followed by `AnsiSequence.from(_:)`.
+
+You can mix and match these APIs by generating sequences and passing them to `terminal.perform(_:)` or by writing custom renderables.
+
+## Error Handling
+
+Most APIs throw `TerminalError` when invalid states occur, such as attempting to write without an available connection. Handle these errors according to your application’s requirements.
+
+## Testing and Customization
+
+Because `TerminalConnection` is a protocol, you can create lightweight fakes that capture written `Data` for unit testing renderers. Combine this with `FlowControlStrategy.chunked(size:pauseMicroseconds:flushEachChunk:)` to experiment with pacing strategies suitable for the terminal emulator your app targets.
+
+## Next Steps
+
+Explore the sources under `Sources/TerminalOutput` for more specialized helpers, and combine the provided building blocks to construct your own terminal user interface components.
