@@ -8,6 +8,7 @@ public struct Terminal {
   /// callers plug in test doubles or alternate pacing behaviour.
   public let connection : TerminalConnection
 
+  /// Creates a terminal that writes through the supplied ``connection``.
   public init ( connection: TerminalConnection ) {
     self.connection = connection
   }

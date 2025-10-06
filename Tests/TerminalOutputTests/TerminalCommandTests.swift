@@ -1,7 +1,9 @@
 import XCTest
 @testable import TerminalOutput
 
+/// Verifies the correctness of the ``TerminalCommand`` escape sequences.
 final class TerminalCommandTests : XCTestCase {
+  /// Ensures cursor movement commands produce the expected codes.
   func testCursorMovementSequences () {
     let commands : [TerminalCommand] = [
       .cursorUp(3),
@@ -26,6 +28,7 @@ final class TerminalCommandTests : XCTestCase {
     XCTAssertEqual(sequences[7], "\u{001B}[9;3H")
   }
 
+  /// Validates cursor visibility helpers and persistence commands.
   func testCursorVisibilityAndPersistenceCommands () {
     XCTAssertEqual(TerminalCommand.saveCursor.sequence.rawValue, "\u{001B}[s")
     XCTAssertEqual(TerminalCommand.restoreCursor.sequence.rawValue, "\u{001B}[u")
@@ -33,6 +36,8 @@ final class TerminalCommandTests : XCTestCase {
     XCTAssertEqual(TerminalCommand.showCursorCommand.sequence.rawValue, "\u{001B}[?25h")
   }
 
+  /// Confirms the erase, clear, and scroll commands map to the documented
+  /// sequences.
   func testEraseAndScrollCommands () {
     XCTAssertEqual(TerminalCommand.clearScreen.sequence.rawValue, "\u{001B}[2J")
     XCTAssertEqual(TerminalCommand.clearScrollback.sequence.rawValue, "\u{001B}[3J")
@@ -41,15 +46,18 @@ final class TerminalCommandTests : XCTestCase {
     XCTAssertEqual(TerminalCommand.scrollDown(4).sequence.rawValue, "\u{001B}[4T")
   }
 
+  /// Checks screen buffer selection commands.
   func testBufferSelection () {
     XCTAssertEqual(TerminalCommand.useAlternateScreenBuffer.sequence.rawValue, "\u{001B}[?1049h")
     XCTAssertEqual(TerminalCommand.usePrimaryScreenBuffer.sequence.rawValue, "\u{001B}[?1049l")
   }
 
+  /// Ensures the OSC window title command is formatted correctly.
   func testWindowTitle () {
     XCTAssertEqual(TerminalCommand.setWindowTitle("Hello").sequence.rawValue, "\u{001B}]2;Hello\u{0007}")
   }
 
+  /// Validates that ``AnsiSequence.from(_:)`` concatenates commands in order.
   func testAnsiSequenceBridging () {
     let combined = AnsiSequence.from([
       .cursorUp(1),

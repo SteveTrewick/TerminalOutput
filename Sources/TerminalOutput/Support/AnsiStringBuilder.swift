@@ -5,6 +5,7 @@ import Foundation
 public struct AnsiStringBuilder {
   private var storage : String
 
+  /// Creates an empty builder ready to receive ANSI sequences and plain text.
   public init () {
     self.storage = ""
   }
